@@ -184,12 +184,21 @@ main(int argc, char **argv)
 	else
 		cmd_name++;
 
-	if (strcmp(cmd_name, "gst_loopback") == 0)
-		pipe_proc = "decodebin ! autovideoconvert ! "
-			"video/x-raw,format=I420 ! identity drop-allocation=true !"
-			"v4l2sink device=/dev/video1 sync=false";
-	else
-		pipe_proc = " decodebin ! autovideosink sync=false";
+    if (strcmp(cmd_name, "gst_loopback") == 0)
+    // original pipeline
+        // pipe_proc = "decodebin ! autovideoconvert ! "
+        //  "video/x-raw,format=I420 ! identity drop-allocation=true !"
+        //  "v4l2sink device=/dev/video2 qos=false sync=false";
+        //
+        //modified pipeline below
+        pipe_proc = "nvdec ! gldownload ! videoconvert n-thread=0 ! "
+            "video/x-raw,format=I420 ! identity drop-allocation=true !"
+            "v4l2sink device=/dev/video2 qos=false sync=false";    
+    else
+        // original pipeline
+        // pipe_proc = " decodebin ! autovideosink sync=false";
+        // use gstreamer plug-in for hardware acceleration
+        pipe_proc = "nvdec ! glimagesink qos=false sync=false";
 
 	if (!gst_src_init(&argc, &argv, pipe_proc))
 		return -1;
